@@ -1,28 +1,32 @@
 package main
 
 import (
-    "fmt"
-    "net/http"
+	"fmt"
+	"os"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-
-    fmt.Fprintf(w, "hello\n")
+type Page struct {
+	Title string
+	Body  []byte
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
+func (p *Page) save() error {
+	filename := p.Title + ".txt"
+	return os.WriteFile(filename, p.Body, 0600)
+}
 
-    for name, headers := range req.Header {
-        for _, h := range headers {
-            fmt.Fprintf(w, "%v: %v\n", name, h)
-        }
-    }
+func loadPage(title string) (*Page, error) {
+	filename := title + ".txt"
+	body, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return &Page{Title: title, Body: body}, nil
 }
 
 func main() {
-
-    http.HandleFunc("/hello", hello)
-    http.HandleFunc("/headers", headers)
-
-    http.ListenAndServe(":8090", nil)
+	p1 := &Page{Title: "TestPage", Body: []byte("This is a sample Page.")}
+	p1.save()
+	p2, _ := loadPage("TestPage")
+	fmt.Println(string(p2.Body))
 }
