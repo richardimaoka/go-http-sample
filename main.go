@@ -9,6 +9,9 @@ import (
 	"net/http"
 	"os"
 	"text/template"
+	"time"
+
+	"github.com/go-git/go-git/v5"
 )
 
 type Page struct {
@@ -59,6 +62,18 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	start := time.Now()
+	_, err := git.PlainClone("/tmp/github.com/facebook/react", false, &git.CloneOptions{
+		URL:      "https://github.com/facebook/react",
+		Progress: os.Stdout,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	end := time.Now()
+	elapsed := end.Sub(start)
+	log.Printf("elapsed = %v", elapsed)
+
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/save/", saveHandler)
